@@ -4,18 +4,22 @@ import com.chien.bookManagement.dto.UserCreationDto;
 import com.chien.bookManagement.dto.UserDto;
 import com.chien.bookManagement.dto.UserUpdateDto;
 import com.chien.bookManagement.entity.User;
+import com.chien.bookManagement.entity.UserDetailsImpl;
 import com.chien.bookManagement.exception.AppException;
 import com.chien.bookManagement.repository.UserRepository;
 import com.chien.bookManagement.service.UserService;
-import java.util.ArrayList;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
+
   @Autowired
   private UserRepository userRepository;
   @Autowired
@@ -84,12 +88,21 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public Iterable<UserDto> findAll() {
-    List<User> userList =userRepository.findAll();
+    List<User> userList = userRepository.findAll();
     if (userList.isEmpty()) {
       throw new AppException(404, "No user has been created yet!");
     }
     return userList.stream()
         .map(groupOfPeople -> mapper.map(groupOfPeople, UserDto.class)).collect(
             Collectors.toList());
+  }
+
+  @Override
+  @Transactional
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+
+    return UserDetailsImpl.build(user);
   }
 }
