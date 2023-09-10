@@ -9,6 +9,7 @@ import com.chien.bookManagement.exception.AppException;
 import com.chien.bookManagement.repository.UserRepository;
 import com.chien.bookManagement.service.UserService;
 import jakarta.transaction.Transactional;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
@@ -81,9 +82,33 @@ public class UserServiceImpl implements UserService {
     if (userList.isEmpty()) {
       throw new AppException(404, "User not found with phone \"" + phone + "\"");
     }
-    return userRepository.findByPhone(phone).stream()
+    return userList.stream()
         .map(user -> mapper.map(user, UserDto.class)).collect(
             Collectors.toList());
+  }
+
+  @Override
+  public List<UserDto> findByEnabled(Boolean enabled) {
+    List<User> userList = userRepository.findByEnabled(enabled);
+    if (userList.isEmpty()) {
+      throw new AppException(404, "User not found with enabled \"" + enabled + "\"");
+    }
+    return userList.stream()
+        .map(user -> mapper.map(user, UserDto.class)).collect(
+            Collectors.toList());
+  }
+
+  @Override
+  public String acceptAccount(Collection<Long> ids) {
+    Integer rowCount = userRepository.updateEnabledById(ids, true)
+        .orElseThrow(() -> new AppException(400, "Error when accepting accounts!"));
+    return "Successfully accepted " + rowCount + " accounts!";
+  }
+
+  @Override
+  public String rejectAccount(Collection<Long> ids) {
+    userRepository.deleteAllByIdInBatch(ids);
+    return "Successfully!";
   }
 
   @Override
@@ -101,7 +126,8 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+        .orElseThrow(
+            () -> new UsernameNotFoundException("User Not Found with username: " + username));
 
     return UserDetailsImpl.build(user);
   }

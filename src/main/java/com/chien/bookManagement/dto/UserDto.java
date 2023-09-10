@@ -1,5 +1,7 @@
 package com.chien.bookManagement.dto;
 
+import com.chien.bookManagement.entity.Role;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,4 +20,5 @@ public class UserDto {
   private String phone;
 
   private String address;
+  private Boolean enabled;
 }

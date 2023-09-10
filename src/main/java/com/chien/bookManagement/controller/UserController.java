@@ -7,6 +7,7 @@ import com.chien.bookManagement.service.UserService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,7 @@ public class UserController {
   @Autowired
   private UserService userService;
 
+  @PreAuthorize("hasRole('A')")
   @PostMapping
   public ResponseEntity<UserDto> create(@RequestBody @Validated UserCreationDto userCreationDto) {
     return ResponseEntity.status(200).body(userService.create(userCreationDto));

@@ -10,7 +10,6 @@ public interface GeneralService<D, C, U> {
   D delete(Long id);
 
   D findById(Long id);
-  List<D> findByName(String name);
 
   Iterable<D> findAll();
 }
