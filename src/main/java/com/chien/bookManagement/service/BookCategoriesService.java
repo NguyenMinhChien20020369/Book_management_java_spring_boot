@@ -1,5 +1,7 @@
 package com.chien.bookManagement.service;
 
+import com.chien.bookManagement.dto.BookCategoriesDto;
+import com.chien.bookManagement.dto.BookCategoriesUpdateDto;
 import com.chien.bookManagement.dto.BookCreationDto;
 import com.chien.bookManagement.dto.UserCreationDto;
 import com.chien.bookManagement.dto.UserDto;
@@ -10,6 +12,6 @@ import java.util.List;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface BookCategoriesService extends
-    com.chien.demoPerson.service.GeneralService<BookCategories, BookCategories, BookCategories> {
+    GeneralService<BookCategoriesDto, BookCategories, BookCategoriesUpdateDto> {
   List<BookCategories> findByTitleOrAuthor(String name);
 }

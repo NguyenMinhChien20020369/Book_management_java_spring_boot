@@ -1,13 +1,14 @@
-package com.chien.demoPerson.service;
+package com.chien.bookManagement.service;
 
+import com.chien.bookManagement.payload.response.MessageResponse;
 import java.util.List;
 
 public interface GeneralService<D, C, U> {
   D create(C c);
 
-  D update(Long id, U u);
+  D update(U u);
 
-  D delete(Long id);
+  MessageResponse delete(Long id);
 
   D findById(Long id);
 

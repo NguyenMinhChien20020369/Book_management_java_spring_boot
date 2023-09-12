@@ -7,5 +7,5 @@ import com.chien.bookManagement.entity.BookCategories;
 import java.util.List;
 
 public interface BookBorrowingService extends
-    com.chien.demoPerson.service.GeneralService<BookBorrowingDto, BorrowingBooksDto, BookBorrowing> {
+    GeneralService<BookBorrowingDto, BorrowingBooksDto, BookBorrowing> {
 }

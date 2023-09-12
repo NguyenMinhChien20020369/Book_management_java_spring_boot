@@ -2,14 +2,15 @@ package com.chien.bookManagement.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import java.util.Collection;
-import java.util.HashSet;
+import java.time.LocalDateTime;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,33 +20,30 @@ import lombok.ToString;
 
 @Entity
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 @JsonIdentityInfo(
     generator = ObjectIdGenerators.PropertyGenerator.class,
     property = "id")
-public class BookCategories {
+public class ActivityHistory {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  private String title;
-  private String author;
-  private Long amount;
 
-  private Long availableQuantity;
+  private String activityName;
 
-  @OneToMany(mappedBy = "bookCategories", cascade = CascadeType.ALL)
+  private LocalDateTime time;
+
+  @ManyToOne
+  @JoinColumn(name = "user_id")
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
-  private Collection<Book> books = new HashSet<>();
+  private User user;
 
-  public BookCategories(BookCategories bookCategoriesInput) {
-    this.id = bookCategoriesInput.getId();
-    this.title = bookCategoriesInput.getTitle();
-    this.author = bookCategoriesInput.getAuthor();
-    this.amount = bookCategoriesInput.getAmount();
-    this.availableQuantity = this.amount;
+  public ActivityHistory(String activityName, LocalDateTime time, User user) {
+    this.activityName = activityName;
+    this.time = time;
+    this.user = user;
   }
 }

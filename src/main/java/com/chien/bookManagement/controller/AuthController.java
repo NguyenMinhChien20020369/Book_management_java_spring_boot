@@ -1,5 +1,6 @@
 package com.chien.bookManagement.controller;
 
+import com.chien.bookManagement.entity.ActivityHistory;
 import com.chien.bookManagement.entity.ERole;
 import com.chien.bookManagement.entity.Role;
 import com.chien.bookManagement.entity.User;
@@ -10,8 +11,11 @@ import com.chien.bookManagement.payload.request.LoginRequest;
 import com.chien.bookManagement.payload.request.SignupRequest;
 import com.chien.bookManagement.payload.response.JwtResponse;
 import com.chien.bookManagement.payload.response.MessageResponse;
+import com.chien.bookManagement.repository.ActivityHistoryRepository;
 import com.chien.bookManagement.repository.RoleRepository;
 import com.chien.bookManagement.repository.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,29 +43,39 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   @Autowired
-  AuthenticationManager authenticationManager;
+  private AuthenticationManager authenticationManager;
 
   @Autowired
-  UserRepository userRepository;
+  private UserRepository userRepository;
 
   @Autowired
-  RoleRepository roleRepository;
+  private RoleRepository roleRepository;
+  @Autowired
+  private ActivityHistoryRepository activityHistoryRepository;
 
   @Autowired
-  PasswordEncoder encoder;
+  private PasswordEncoder encoder;
 
   @Autowired
-  JwtUtils jwtUtils;
+  private JwtUtils jwtUtils;
 
+  @Operation(summary = "Signin")
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
     User fromDB = userRepository.findByUsername(loginRequest.getUsername()).orElse(null);
+    ActivityHistory activity = new ActivityHistory("Signin", LocalDateTime.now(), fromDB);
     if (fromDB == null) {
       throw new AppException(404, "User not found!");
     } else if (!fromDB.isEnabled()) {
+      activityHistoryRepository.save(activity);
       throw new AppException(407,
           "Your account has not been approved by the librarian yet, please wait!");
+    } else if (fromDB.getDisabled()) {
+      activityHistoryRepository.save(activity);
+      throw new AppException(407,
+          "Your account has been disabled by the librarian because you violated the rules!");
     }
+    activityHistoryRepository.save(activity);
 
     Authentication authentication = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
@@ -82,6 +96,7 @@ public class AuthController {
         roles));
   }
 
+  @Operation(summary = "Signup")
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
     if (userRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -127,6 +142,8 @@ public class AuthController {
 
     user.setRoles(roles);
     userRepository.save(user);
+    ActivityHistory activity = new ActivityHistory("Signup", LocalDateTime.now(), user);
+    activityHistoryRepository.save(activity);
 
     return ResponseEntity.ok(new MessageResponse(
         "User registered successfully! Please wait for the librarian to approve your account!"));

@@ -4,13 +4,17 @@ import com.chien.bookManagement.dto.BookBorrowingDto;
 import com.chien.bookManagement.dto.BorrowingBooksDto;
 import com.chien.bookManagement.dto.PaymentDto;
 import com.chien.bookManagement.dto.ReturningBooksDto;
+import com.chien.bookManagement.entity.ActivityHistory;
 import com.chien.bookManagement.entity.Book;
 import com.chien.bookManagement.entity.BookBorrowing;
 import com.chien.bookManagement.entity.BookCategories;
+import com.chien.bookManagement.entity.User;
 import com.chien.bookManagement.exception.AppException;
+import com.chien.bookManagement.repository.ActivityHistoryRepository;
 import com.chien.bookManagement.repository.BookBorrowingRepository;
 import com.chien.bookManagement.repository.BookCategoriesRepository;
 import com.chien.bookManagement.repository.BookRepository;
+import com.chien.bookManagement.repository.UserRepository;
 import com.chien.bookManagement.service.BookCategoriesService;
 import com.chien.bookManagement.service.UserActivitiesService;
 import java.time.LocalDateTime;
@@ -30,6 +34,11 @@ public class UserActivitiesServiceImpl implements UserActivitiesService {
   private BookRepository bookRepository;
   @Autowired
   private BookCategoriesRepository bookCategoriesRepository;
+
+  @Autowired
+  private ActivityHistoryRepository activityHistoryRepository;
+  @Autowired
+  private UserRepository userRepository;
   @Autowired
   private ModelMapper mapper;
 
@@ -38,6 +47,10 @@ public class UserActivitiesServiceImpl implements UserActivitiesService {
     LocalDateTime now = LocalDateTime.now();
     List<BookBorrowing> bookBorrowingList = bookBorrowingRepository.findBooksToBeReturnedByBookIds(
         returningBooksDto.getBookIds()).orElseThrow(() -> new AppException(404, "Not Found!"));
+
+    ActivityHistory activity = new ActivityHistory("Returning books", LocalDateTime.now(), bookBorrowingList.get(0).getUser());
+    activityHistoryRepository.save(activity);
+
     for (BookBorrowing bookBorrowing : bookBorrowingList) {
       bookBorrowing.setReturnDate(now);
       int numberOfOverdueDays = now.compareTo(bookBorrowing.getBorrowDate()) - 180;
@@ -66,6 +79,14 @@ public class UserActivitiesServiceImpl implements UserActivitiesService {
 
   @Override
   public String payment(PaymentDto paymentDto) {
+    User user = userRepository.findById(paymentDto.getUserId()).orElse(null);
+    if (user == null) {
+      throw new AppException(404, "User not found");
+    }
+
+    ActivityHistory activity = new ActivityHistory("Returning books", LocalDateTime.now(), user);
+    activityHistoryRepository.save(activity);
+
     bookBorrowingRepository.payment(paymentDto.getBookId(), paymentDto.getAmountPaid(),
         paymentDto.getUserId()).orElseThrow(() -> new AppException(404, "Not Found!"));
     return "Successfully!";

@@ -1,5 +1,6 @@
 package com.chien.bookManagement.exception;
 
+import com.chien.bookManagement.payload.response.MessageResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -26,8 +27,8 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler({AppException.class})
-  public ResponseEntity<String> handleAppException(AppException e) {
-    return ResponseEntity.status(e.getCode()).body(e.getMessage());
+  public ResponseEntity<MessageResponse> handleAppException(AppException e) {
+    return ResponseEntity.status(e.getCode()).body(new MessageResponse(e.getMessage()));
   }
 
   @ExceptionHandler(BindException.class)

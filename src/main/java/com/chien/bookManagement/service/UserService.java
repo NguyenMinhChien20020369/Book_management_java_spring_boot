@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends
-    com.chien.demoPerson.service.GeneralService<UserDto, UserCreationDto, UserUpdateDto>,
+    GeneralService<UserDto, UserCreationDto, UserUpdateDto>,
     UserDetailsService {
   List<UserDto> findByName(String name);
 
@@ -17,4 +17,5 @@ public interface UserService extends
   List<UserDto> findByEnabled(Boolean enabled);
   String acceptAccount(Collection<Long> ids);
   String rejectAccount(Collection<Long> ids);
+  String disabledAccount(Collection<Long> ids);
 }

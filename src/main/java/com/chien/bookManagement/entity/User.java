@@ -55,6 +55,7 @@ public class User {
   private String phone;
   private String address;
   private Boolean enabled = false;
+  private Boolean disabled = false;
 
   public User(String username, String password, String email) {
     this.username = username;
@@ -68,6 +69,10 @@ public class User {
 
   @OneToMany(mappedBy = "user")
   private Set<BookBorrowing> bookBorrowings;
+
+
+  @OneToMany(mappedBy = "user")
+  private Set<ActivityHistory> activityHistories;
 
   public Boolean isEnabled() {
     return enabled;

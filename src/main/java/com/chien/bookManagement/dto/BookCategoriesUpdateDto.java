@@ -1,15 +1,20 @@
 package com.chien.bookManagement.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class BookCreationDto {
+@AllArgsConstructor
+@NoArgsConstructor
+public class BookCategoriesUpdateDto {
+  @NotNull(message = "Thiếu ID danh mục sách!")
+  private Long id;
 
   @NotEmpty(message = "Thiếu tên sách!")
   private String title;
@@ -17,6 +22,4 @@ public class BookCreationDto {
   @NotEmpty(message = "Thiếu tên tác giả!")
   private String author;
 
-  @NotNull(message = "Thiếu số lượng!")
-  private Long amount;
 }

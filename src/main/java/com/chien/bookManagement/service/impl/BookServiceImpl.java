@@ -4,6 +4,7 @@ import com.chien.bookManagement.entity.Book;
 import com.chien.bookManagement.entity.Book;
 import com.chien.bookManagement.entity.BookCategories;
 import com.chien.bookManagement.exception.AppException;
+import com.chien.bookManagement.payload.response.MessageResponse;
 import com.chien.bookManagement.repository.BookRepository;
 import com.chien.bookManagement.repository.BookRepository;
 import com.chien.bookManagement.service.BookService;
@@ -28,8 +29,8 @@ public class BookServiceImpl implements BookService {
   }
 
   @Override
-  public Book update(Long id, Book BookInput) {
-    Book fromDB = bookRepository.findById(id).orElse(null);
+  public Book update(Book BookInput) {
+    Book fromDB = bookRepository.findById(BookInput.getId()).orElse(null);
     if (fromDB == null) {
       throw new AppException(404, "User not found");
     }
@@ -41,13 +42,13 @@ public class BookServiceImpl implements BookService {
   }
 
   @Override
-  public Book delete(Long id) {
+  public MessageResponse delete(Long id) {
     Book fromDB = bookRepository.findById(id).orElse(null);
     if (fromDB == null) {
       throw new AppException(404, "User not found");
     }
     bookRepository.deleteById(id);
-    return fromDB;
+    return new MessageResponse("Successfully deleted!");
   }
 
   @Override

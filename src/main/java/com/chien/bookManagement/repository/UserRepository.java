@@ -26,4 +26,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Transactional
   @Query(value = "UPDATE user SET enabled = :enabled WHERE id IN :ids", nativeQuery = true)
   Optional<Integer> updateEnabledById(@Param("ids") Collection<Long> ids, @Param("enabled") Boolean enabled);
+  @Modifying
+  @Transactional
+  @Query(value = "UPDATE user SET disabled = :disabled WHERE id IN :ids", nativeQuery = true)
+  Optional<Integer> updateDisabledById(@Param("ids") Collection<Long> ids, @Param("disabled") Boolean disabled);
 }
