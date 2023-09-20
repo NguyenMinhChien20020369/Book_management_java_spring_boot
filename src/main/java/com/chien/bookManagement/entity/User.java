@@ -3,6 +3,7 @@ package com.chien.bookManagement.entity;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,7 +30,6 @@ import lombok.ToString;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user")
 @Getter
 @Setter
 @ToString
@@ -41,16 +41,9 @@ public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  @Column(nullable = false, unique = true)
-  @Size(max = 20)
   private String username;
-  @NotBlank
-  @Size(max = 120)
   private String password;
   private String name;
-  @NotBlank
-  @Size(max = 50)
-  @Email
   private String email;
   private String phone;
   private String address;
@@ -67,11 +60,11 @@ public class User {
   @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
   private Set<Role> roles;
 
-  @OneToMany(mappedBy = "user")
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
   private Set<BookBorrowing> bookBorrowings;
 
 
-  @OneToMany(mappedBy = "user")
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
   private Set<ActivityHistory> activityHistories;
 
   public Boolean isEnabled() {

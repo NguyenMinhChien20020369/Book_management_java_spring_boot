@@ -1,15 +1,14 @@
 package com.chien.bookManagement.service.impl;
 
 import com.chien.bookManagement.entity.Book;
-import com.chien.bookManagement.entity.Book;
 import com.chien.bookManagement.entity.BookCategories;
 import com.chien.bookManagement.exception.AppException;
-import com.chien.bookManagement.payload.response.MessageResponse;
-import com.chien.bookManagement.repository.BookRepository;
+import com.chien.bookManagement.payload.response.SuccessResponse;
 import com.chien.bookManagement.repository.BookRepository;
 import com.chien.bookManagement.service.BookService;
-import com.chien.bookManagement.service.BookService;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,44 +28,47 @@ public class BookServiceImpl implements BookService {
   }
 
   @Override
-  public Book update(Book BookInput) {
+  public SuccessResponse update(Book BookInput) {
     Book fromDB = bookRepository.findById(BookInput.getId()).orElse(null);
     if (fromDB == null) {
-      throw new AppException(404, "User not found");
+      throw new AppException(404, 44, "Error: Does not exist! Book not found!");
     }
     fromDB.setId(BookInput.getId());
     fromDB.setId(BookInput.getId());
     fromDB.setId(BookInput.getId());
     fromDB.setId(BookInput.getId());
-    return bookRepository.save(fromDB);
+    return new SuccessResponse(bookRepository.save(fromDB));
   }
 
   @Override
-  public MessageResponse delete(Long id) {
+  public Map<String, Object> delete(Long id) {
     Book fromDB = bookRepository.findById(id).orElse(null);
     if (fromDB == null) {
-      throw new AppException(404, "User not found");
+      throw new AppException(404, 44, "Error: Does not exist! Book not found!");
     }
     bookRepository.deleteById(id);
-    return new MessageResponse("Successfully deleted!");
+    final Map<String, Object> body = new HashMap<>();
+    body.put("code", 0);
+    body.put("message", "Successfully deleted!");
+    return body;
   }
 
   @Override
-  public Book findById(Long id) {
+  public SuccessResponse findById(Long id) {
     Book book = bookRepository.findById(id).orElse(null);
     if (book == null) {
-      throw new AppException(404, "Book not found");
+      throw new AppException(404, 44, "Error: Does not exist! Book not found!");
     } else {
-      return book;
+      return new SuccessResponse(book);
     }
   }
 
   @Override
-  public Iterable<Book> findAll() {
+  public SuccessResponse findAll() {
     List<Book> userList = bookRepository.findAll();
     if (userList.isEmpty()) {
-      throw new AppException(404, "No user has been created yet!");
+      throw new AppException(404, 44, "Error: Does not exist! No book has been created yet!");
     }
-    return userList;
+    return new SuccessResponse(userList);
   }
 }

@@ -6,9 +6,11 @@ import com.chien.bookManagement.dto.PaymentDto;
 import com.chien.bookManagement.dto.ReturningBooksDto;
 import com.chien.bookManagement.entity.BookBorrowing;
 import com.chien.bookManagement.entity.BookCategories;
+import com.chien.bookManagement.payload.response.SuccessResponse;
 import java.util.List;
+import java.util.Map;
 
 public interface UserActivitiesService {
-  List<BookBorrowingDto> returningBooks(ReturningBooksDto returningBooksDto);
-  String payment(PaymentDto paymentDto);
+  SuccessResponse returningBooks(ReturningBooksDto returningBooksDto);
+  Map<String, Object> payment(PaymentDto paymentDto);
 }

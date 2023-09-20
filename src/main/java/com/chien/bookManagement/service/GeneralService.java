@@ -1,16 +1,16 @@
 package com.chien.bookManagement.service;
 
-import com.chien.bookManagement.payload.response.MessageResponse;
-import java.util.List;
+import com.chien.bookManagement.payload.response.SuccessResponse;
+import java.util.Map;
 
 public interface GeneralService<D, C, U> {
   D create(C c);
 
-  D update(U u);
+  SuccessResponse update(U u);
 
-  MessageResponse delete(Long id);
+  Map<String, Object> delete(Long id);
 
-  D findById(Long id);
+  SuccessResponse findById(Long id);
 
-  Iterable<D> findAll();
+  SuccessResponse findAll();
 }

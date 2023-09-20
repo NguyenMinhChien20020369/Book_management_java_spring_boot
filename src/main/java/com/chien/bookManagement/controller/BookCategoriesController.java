@@ -2,16 +2,13 @@ package com.chien.bookManagement.controller;
 
 import com.chien.bookManagement.dto.BookCategoriesDto;
 import com.chien.bookManagement.dto.BookCategoriesUpdateDto;
-import com.chien.bookManagement.dto.BookCreationDto;
-import com.chien.bookManagement.dto.UserCreationDto;
-import com.chien.bookManagement.dto.UserDto;
 import com.chien.bookManagement.entity.BookCategories;
-import com.chien.bookManagement.payload.response.MessageResponse;
+import com.chien.bookManagement.payload.response.SuccessResponse;
 import com.chien.bookManagement.service.BookCategoriesService;
-import com.chien.bookManagement.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,21 +37,21 @@ public class BookCategoriesController {
   @Operation(summary = "Find by title or author")
   @PreAuthorize("hasRole('LIBRARIAN') or hasRole('USER')")
   @GetMapping("/{name}")
-  public ResponseEntity<List<BookCategories>> findByTitleOrAuthor(@PathVariable String name) {
+  public ResponseEntity<SuccessResponse> findByTitleOrAuthor(@PathVariable String name) {
     return ResponseEntity.status(200).body(bookCategoriesService.findByTitleOrAuthor(name));
   }
 
   @Operation(summary = "Update book")
   @PreAuthorize("hasRole('LIBRARIAN')")
   @PutMapping
-  public ResponseEntity<BookCategoriesDto> updateBook(@RequestBody @Validated BookCategoriesUpdateDto bookCategoriesUpdateDto) {
+  public ResponseEntity<SuccessResponse> updateBook(@RequestBody @Validated BookCategoriesUpdateDto bookCategoriesUpdateDto) {
     return ResponseEntity.status(200).body(bookCategoriesService.update(bookCategoriesUpdateDto));
   }
 
   @Operation(summary = "Delete book")
   @PreAuthorize("hasRole('LIBRARIAN')")
-  @DeleteMapping("/{id}")
-  public ResponseEntity<MessageResponse> deleteBook(@PathVariable Long id) {
+  @DeleteMapping("/{id:[0-9]{1,32}}")
+  public ResponseEntity<Map<String, Object>> deleteBook(@PathVariable Long id) {
     return ResponseEntity.status(200).body(bookCategoriesService.delete(id));
   }
 }

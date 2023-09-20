@@ -16,4 +16,5 @@ import org.springframework.stereotype.Repository;
 public interface BookCategoriesRepository extends JpaRepository<BookCategories, Long> {
   @Query(value = "SELECT * FROM book_categories WHERE title LIKE :name OR author LIKE :name ORDER BY author, title", nativeQuery = true)
   List<BookCategories> findByTitleOrAuthor(@Param("name") String name);
+  Boolean existsByTitleAndAuthor(String title, String author);
 }

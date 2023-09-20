@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtils {
+
   private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
   @Value("${app.jwtSecret}")
@@ -34,7 +35,7 @@ public class JwtUtils {
         .setSubject((userPrincipal.getUsername()))
         .setIssuedAt(new Date())
         .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-        .signWith(SignatureAlgorithm.HS256, key())
+        .signWith(key(), SignatureAlgorithm.HS256)
         .compact();
   }
 
@@ -43,13 +44,13 @@ public class JwtUtils {
   }
 
   public String getUserNameFromJwtToken(String token) {
-    return Jwts.parser().setSigningKey(key())
-        .parseClaimsJws(token).getBody().getSubject();
+    return Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(token).getBody()
+        .getSubject();
   }
 
   public boolean validateJwtToken(String authToken) {
     try {
-      Jwts.parser().setSigningKey(key()).parse(authToken);
+      Jwts.parserBuilder().setSigningKey(key()).build().parse(authToken);
       return true;
     } catch (MalformedJwtException e) {
       logger.error("Invalid JWT token: {}", e.getMessage());

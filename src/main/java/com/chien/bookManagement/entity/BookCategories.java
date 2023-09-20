@@ -39,7 +39,7 @@ public class BookCategories {
   @OneToMany(mappedBy = "bookCategories", cascade = CascadeType.ALL)
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
-  private Collection<Book> books = new HashSet<>();
+  private Collection<Book> books;
 
   public BookCategories(BookCategories bookCategoriesInput) {
     this.id = bookCategoriesInput.getId();

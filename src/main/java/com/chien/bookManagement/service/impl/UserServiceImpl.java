@@ -7,14 +7,16 @@ import com.chien.bookManagement.entity.ActivityHistory;
 import com.chien.bookManagement.entity.User;
 import com.chien.bookManagement.entity.UserDetailsImpl;
 import com.chien.bookManagement.exception.AppException;
-import com.chien.bookManagement.payload.response.MessageResponse;
+import com.chien.bookManagement.payload.response.SuccessResponse;
 import com.chien.bookManagement.repository.ActivityHistoryRepository;
 import com.chien.bookManagement.repository.UserRepository;
 import com.chien.bookManagement.service.UserService;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
@@ -42,32 +44,33 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public UserDto update(UserUpdateDto userUpdateDto) {
+  public SuccessResponse update(UserUpdateDto userUpdateDto) {
     UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
         .getAuthentication().getPrincipal();
     User thisUser = userRepository.findById(userDetails.getId())
-        .orElseThrow(() -> new AppException(404, "User not found"));
+        .orElseThrow(() -> new AppException(404, 44, "Error: Does not exist! User not found!"));
 
     ActivityHistory activity = new ActivityHistory("Update user", LocalDateTime.now(), thisUser);
     activityHistoryRepository.save(activity);
 
     User fromDB = userRepository.findById(userUpdateDto.getId())
-        .orElseThrow(() -> new AppException(404, "User not found"));
+        .orElseThrow(() -> new AppException(404, 44, "Error: Does not exist! User not found!"));
 
     List<String> roles = userDetails.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority).toList();
     boolean isUser = false;
     boolean isLib = false;
     for (String role : roles) {
-      if (Objects.equals(role, "USER")) {
+      if (Objects.equals(role, "ROLE_USER")) {
         isUser = true;
-      } else if (Objects.equals(role, "LIBRARIAN")) {
+      } else if (Objects.equals(role, "ROLE_LIBRARIAN")) {
         isLib = true;
       }
     }
     if (!isLib && isUser) {
       if (!Objects.equals(userUpdateDto.getId(), userDetails.getId())) {
-        throw new AppException(401, "Unauthorized");
+        throw new AppException(403, 43,
+            "Forbidden! Your account only has permission to edit your own account information!");
       }
     }
 
@@ -75,15 +78,15 @@ public class UserServiceImpl implements UserService {
     fromDB.setName(userUpdateDto.getName());
     fromDB.setPhone(userUpdateDto.getPhone());
     fromDB.setAddress(userUpdateDto.getAddress());
-    return mapper.map(userRepository.save(fromDB), UserDto.class);
+    return new SuccessResponse(mapper.map(userRepository.save(fromDB), UserDto.class));
   }
 
   @Override
-  public MessageResponse delete(Long id) {
+  public Map<String, Object> delete(Long id) {
     UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
         .getAuthentication().getPrincipal();
     User thisUser = userRepository.findById(userDetails.getId())
-        .orElseThrow(() -> new AppException(404, "User not found"));
+        .orElseThrow(() -> new AppException(404, 44, "Error: Does not exist! User not found!"));
 
     ActivityHistory activity = new ActivityHistory("Delete user", LocalDateTime.now(), thisUser);
     activityHistoryRepository.save(activity);
@@ -93,98 +96,164 @@ public class UserServiceImpl implements UserService {
     boolean isUser = false;
     boolean isLib = false;
     for (String role : roles) {
-      if (Objects.equals(role, "USER")) {
+      if (Objects.equals(role, "ROLE_USER")) {
         isUser = true;
-      } else if (Objects.equals(role, "LIBRARIAN")) {
+      } else if (Objects.equals(role, "ROLE_LIBRARIAN")) {
         isLib = true;
       }
     }
     if (!isLib && isUser) {
       if (!Objects.equals(id, userDetails.getId())) {
-        throw new AppException(401, "Unauthorized");
+        throw new AppException(403, 43,
+            "Forbidden! Your account only has permission to delete your own account!");
       }
     }
 
     User fromDB = userRepository.findById(id).orElse(null);
     if (fromDB == null) {
-      throw new AppException(404, "User not found");
+      throw new AppException(404, 44, "Error: Does not exist! User not found!");
     }
     userRepository.deleteById(id);
-    return new MessageResponse("Successfully deleted!");
+    final Map<String, Object> body = new HashMap<>();
+    body.put("code", 0);
+    body.put("message", "Successfully deleted!");
+    return body;
   }
 
   @Override
-  public UserDto findById(Long id) {
+  public SuccessResponse findById(Long id) {
     User user = userRepository.findById(id).orElse(null);
     if (user == null) {
-      throw new AppException(404, "User not found");
+      throw new AppException(404, 44, "Error: Does not exist! User not found!");
     } else {
-      return mapper.map(user, UserDto.class);
+      return new SuccessResponse(mapper.map(user, UserDto.class));
     }
   }
 
   @Override
-  public List<UserDto> findByName(String name) {
-    List<User> userList = userRepository.findByName(name);
+  public SuccessResponse findByName(String name) {
+    List<User> userList = userRepository.findByName("%" + name + "%");
     if (userList.isEmpty()) {
-      throw new AppException(404, "User not found with name \"" + name + "\"");
+      throw new AppException(404, 44,
+          "Error: Does not exist! User not found with name '" + name + "'!");
     }
-    return userList.stream()
+    return new SuccessResponse(userList.stream()
         .map(user -> mapper.map(user, UserDto.class)).collect(
-            Collectors.toList());
+            Collectors.toList()));
   }
 
   @Override
-  public List<UserDto> findByPhone(String phone) {
-    List<User> userList = userRepository.findByPhone(phone);
+  public SuccessResponse findByPhone(String phone) {
+    List<User> userList = userRepository.findByPhone("%" + phone + "%");
     if (userList.isEmpty()) {
-      throw new AppException(404, "User not found with phone \"" + phone + "\"");
+      throw new AppException(404, 44,
+          "Error: Does not exist! User not found with phone '" + phone + "'!");
     }
-    return userList.stream()
+    return new SuccessResponse(userList.stream()
         .map(user -> mapper.map(user, UserDto.class)).collect(
-            Collectors.toList());
+            Collectors.toList()));
   }
 
   @Override
-  public List<UserDto> findByEnabled(Boolean enabled) {
+  public SuccessResponse findByEnabled(Boolean enabled) {
     List<User> userList = userRepository.findByEnabled(enabled);
     if (userList.isEmpty()) {
-      throw new AppException(404, "User not found with enabled \"" + enabled + "\"");
+      throw new AppException(200, 8,
+          "There are no accounts in need of approval!");
     }
-    return userList.stream()
+    return new SuccessResponse(userList.stream()
         .map(user -> mapper.map(user, UserDto.class)).collect(
-            Collectors.toList());
+            Collectors.toList()));
   }
 
   @Override
-  public String acceptAccount(Collection<Long> ids) {
+  public Map<String, Object> acceptAccount(Collection<Long> ids) {
+    List<User> userList = userRepository.findAllById(ids);
+    if (userList.isEmpty()) {
+      throw new AppException(404,
+          44, "Error: Does not exist! User not found with id list: " + ids.toString() + "!");
+    } else if (userList.size() != ids.size()) {
+      throw new AppException(404,
+          44,
+          "Error: Does not exist! Not enough user accounts found with id list: " + ids.toString()
+              + "!");
+    }
+    for (User user : userList) {
+      if (user.isEnabled()) {
+        throw new AppException(400, 6,
+            "You can only accept accounts that have not been accepted yet!");
+      }
+    }
+
     Integer rowCount = userRepository.updateEnabledById(ids, true)
-        .orElseThrow(() -> new AppException(400, "Error when accepting accounts!"));
-    return "Successfully accepted " + rowCount + " accounts!";
+        .orElseThrow(() -> new AppException(404, 44, "Error: Does not exist! User not found!"));
+    final Map<String, Object> body = new HashMap<>();
+    body.put("code", 0);
+    body.put("message", "Successfully accepted " + rowCount + " accounts!");
+    return body;
   }
 
   @Override
-  public String rejectAccount(Collection<Long> ids) {
+  public Map<String, Object> rejectAccount(Collection<Long> ids) {
+    List<User> userList = userRepository.findAllById(ids);
+    if (userList.isEmpty()) {
+      throw new AppException(404,
+          44, "Error: Does not exist! User not found with id list: " + ids.toString() + "!");
+    } else if (userList.size() != ids.size()) {
+      throw new AppException(404,
+          44,
+          "Error: Does not exist! Not enough user accounts found with id list: " + ids.toString()
+              + "!");
+    }
+    for (User user : userList) {
+      if (user.isEnabled()) {
+        throw new AppException(400, 5,
+            "You can only reject accounts that have not been accepted yet!");
+      }
+    }
+    activityHistoryRepository.deleteAllByUserIdInBatch(ids);
     userRepository.deleteAllByIdInBatch(ids);
-    return "Successfully!";
+    final Map<String, Object> body = new HashMap<>();
+    body.put("code", 0);
+    body.put("message", "Successfully deleted!");
+    return body;
   }
 
   @Override
-  public String disabledAccount(Collection<Long> ids) {
+  public Map<String, Object> disabledAccount(Collection<Long> ids) {
+    List<User> userList = userRepository.findAllById(ids);
+    if (userList.isEmpty()) {
+      throw new AppException(404,
+          44, "Error: Does not exist! User not found with id list: " + ids.toString() + "!");
+    } else if (userList.size() != ids.size()) {
+      throw new AppException(404,
+          44,
+          "Error: Does not exist! Not enough user accounts found with id list: " + ids.toString()
+              + "!");
+    }
+    for (User user : userList) {
+      if (user.getDisabled()) {
+        throw new AppException(400, 9,
+            "You can only disable accounts that haven't been disabled already!");
+      }
+    }
     Integer rowCount = userRepository.updateDisabledById(ids, true)
-        .orElseThrow(() -> new AppException(400, "Error when disabling accounts!"));
-    return "Successfully disabled " + rowCount + " accounts!";
+        .orElseThrow(() -> new AppException(404, 44, "Error: Does not exist! User not found!"));
+    final Map<String, Object> body = new HashMap<>();
+    body.put("code", 0);
+    body.put("message", "Successfully disabled " + rowCount + " accounts!");
+    return body;
   }
 
   @Override
-  public Iterable<UserDto> findAll() {
+  public SuccessResponse findAll() {
     List<User> userList = userRepository.findAll();
     if (userList.isEmpty()) {
-      throw new AppException(404, "No user has been created yet!");
+      throw new AppException(404, 44, "Error: Does not exist! No user has been created yet!");
     }
-    return userList.stream()
+    return new SuccessResponse(userList.stream()
         .map(user -> mapper.map(user, UserDto.class)).collect(
-            Collectors.toList());
+            Collectors.toList()));
   }
 
   @Override

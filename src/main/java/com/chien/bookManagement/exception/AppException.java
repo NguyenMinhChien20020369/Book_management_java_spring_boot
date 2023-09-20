@@ -6,6 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AppException extends RuntimeException {
-private int code;
-private String message;
+
+  private int httpStatusCode;
+  private int code;
+  private String message;
 }

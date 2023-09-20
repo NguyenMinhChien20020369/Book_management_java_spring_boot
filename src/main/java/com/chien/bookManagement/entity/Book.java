@@ -41,7 +41,7 @@ public class Book {
 
   private String status;
 
-  @OneToMany(mappedBy = "book")
+  @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
   private Set<BookBorrowing> bookBorrowings;
 
   @ManyToOne
